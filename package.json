@@ -1,7 +1,7 @@
 {
     "name": "mongoose-searchable",
     "version": "0.1.0",
-    "description": "keywords based searching for mongoose model, utilizing mongodb text search",
+    "description": "Keywords based searching for mongoose model, utilizing mongodb text search",
     "main": "index.js",
     "scripts": {
         "test": "grunt test"
@@ -32,7 +32,7 @@
         "text"
     ],
     "dependencies": {
-        "async": "^1.4.2",
+        "async": "^1.5.0",
         "glossary": "^0.1.1",
         "lodash": "^3.10.1"
     },
