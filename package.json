@@ -37,7 +37,7 @@
         "lodash": "^3.10.1"
     },
     "devDependencies": {
-        "chai": "^1.10.0",
+        "chai": "^3.4.1",
         "faker": "^2.1.2",
         "grunt": "^0.4.5",
         "grunt-contrib-jshint": "^0.11.2",
