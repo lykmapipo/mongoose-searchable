@@ -97,7 +97,7 @@ describe('searchable', function() {
 
             Book.search(books[0].authors, function(error, foundBooks) {
 
-                expect(foundBooks).to.have.length(2);
+                expect(foundBooks.length).to.be.equal(2);
 
                 expect(foundBooks[0].title).to.equal(books[0].title);
                 expect(foundBooks[1].title).to.equal(books[3].title);
@@ -111,7 +111,7 @@ describe('searchable', function() {
 
             Book.search(books[8].title, function(error, foundBooks) {
 
-                expect(foundBooks).to.have.length(3);
+                expect(foundBooks.length).to.be.equal(3);
 
                 expect(foundBooks[0].title).to.equal(books[8].title);
                 expect(foundBooks[1].title).to.equal(books[0].title);
@@ -128,7 +128,7 @@ describe('searchable', function() {
 
             Book.search(terms, function(error, foundBooks) {
 
-                expect(foundBooks).to.have.length(1);
+                expect(foundBooks.length).to.be.equal(1);
 
                 expect(foundBooks[0].title).to.equal(books[0].title);
 
