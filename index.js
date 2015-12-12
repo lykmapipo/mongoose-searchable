@@ -79,6 +79,10 @@ module.exports = exports = function(schema, options) {
         //this refer to model instance context
 
         keywords = keywords || [];
+
+        //honor existing set`ed` keywords
+        keywords = _.union(keywords, this.get(options.keywordField));
+
         if (!_.isArray(keywords)) {
             keywords = [keywords];
         }
