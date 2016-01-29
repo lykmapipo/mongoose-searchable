@@ -58,6 +58,9 @@ module.exports = exports = function(schema, options) {
     //fields to be used as source of keywords
     options.fields = options.fields || fields;
 
+    //language to use for searching
+    options.language = options.language || 'english';
+
     //prepare keyword schema attribute
     var attribute = {};
     attribute[options.keywordField] = {
@@ -167,7 +170,8 @@ module.exports = exports = function(schema, options) {
         //prepare mongoose text search query
         var query = this.find({
                 $text: {
-                    $search: keywords.join(' ').trim()
+                    $search: keywords.join(' ').trim(),
+                    $language: options.language
                 }
             }, {
                 score: {
