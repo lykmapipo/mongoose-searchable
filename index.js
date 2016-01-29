@@ -21,9 +21,35 @@ function normalizeKeywords(keywords) {
     return keywords;
 }
 
-function parseKeywords(content, options) {
-    var keywords = glossary.extract(content, options);
-    return normalizeKeywords(keywords);
+function parseKeywords(content, options, done) {
+    //normalize options
+    options = options || {};
+
+    //default keywords extractor
+    function extract(content, finish) {
+        try {
+            var keywords = glossary.extract(content, options);
+            finish(null, keywords);
+        } catch (e) {
+            finish(e);
+        }
+    }
+
+    //deduce keywords extraction function
+    var extract =
+        options && options.extract ? options.extract : extract;
+
+    //extract content keyword
+    extract(content, function(error, keywords) {
+        if (error) {
+            done(error);
+        } else {
+            //return normalized keywords
+            keywords = normalizeKeywords(keywords);
+            done(null, keywords);
+        }
+
+    });
 }
 
 
