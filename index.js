@@ -148,24 +148,37 @@ module.exports = exports = function(schema, options) {
     /**
      * @description search and score stored documents based on the provided
      *              keyword
-     * @param  {String|Array<String>}   keywords search string
-     * @param  {Object}   options valid mongodb text search options
+     * @param  {String|Array<String>}   [keywords] search string
+     * @param  {Object}   [searchOptions] valid mongodb text search options
      * @param  {Function} [callback] a function to invoke on success or failure 
      * @return {Query}            valid mongoose query
      */
-    schema.statics.search = function(keywords, callback) {
+    schema.statics.search = function(keywords, searchOptions, callback) {
         //this refer to schema static context
 
         //normalize arguments
         if (keywords && _.isFunction(keywords)) {
-            keywords = '';
             callback = keywords;
+            keywords = '';
+            searchOptions = {};
+        }
+
+        if ((_.isArray(keywords) || _.isString(keywords)) && _.isFunction(searchOptions)) {
+            callback = searchOptions;
+            searchOptions = {};
         }
 
         //prepare search strings from keywords
         if (!_.isArray(keywords)) {
             keywords = parseKeywords(keywords, options);
         }
+
+        //prepare text search criteria
+        var $text = _.merge({}, {
+            $language: options.language
+        }, searchOptions, {
+            $search: keywords.join(' ').trim()
+        });
 
         //prepare query
         var query;
@@ -179,10 +192,7 @@ module.exports = exports = function(schema, options) {
         //prepare mongoose text search query
         else {
             query = this.find({
-                    $text: {
-                        $search: keywords.join(' ').trim(),
-                        $language: options.language
-                    }
+                    $text: $text
                 }, {
                     score: {
                         $meta: 'textScore'
