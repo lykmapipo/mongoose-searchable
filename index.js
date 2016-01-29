@@ -3,6 +3,7 @@
 //dependencies
 var _ = require('lodash');
 var glossary = require('glossary');
+var async = require('async');
 
 function normalizeKeywords(keywords) {
     //remove falsey values
@@ -26,7 +27,7 @@ function parseKeywords(content, options, done) {
     options = options || {};
 
     //default keywords extractor
-    function extract(content, finish) {
+    function extractor(content, finish) {
         try {
             var keywords = glossary.extract(content, options);
             finish(null, keywords);
@@ -37,7 +38,7 @@ function parseKeywords(content, options, done) {
 
     //deduce keywords extraction function
     var extract =
-        options && options.extract ? options.extract : extract;
+        options && options.extract ? options.extract : extractor;
 
     //extract content keyword
     extract(content, function(error, keywords) {
@@ -103,40 +104,56 @@ module.exports = exports = function(schema, options) {
      * @description update current document keywords collection by union
      *              provided keywords and ones extracted/computed from fields
      * @param {String|Array<String>} [keywords] additinal keywords
+     * @param {Function} [done] a callback to invoke on success or error
      */
-    schema.methods.keywordize = function(keywords) {
+    schema.methods.keywordize = function(keywords, done) {
         //this refer to model instance context
 
-        keywords = keywords || [];
+        if (_.isFunction(keywords)) {
+            done = keywords;
+            keywords = [];
+        }
+
+        //deduce keywords
+        keywords =
+            keywords && _.isString(keywords) ? keywords.split(' ') : [].concat(keywords);
 
         //honor existing set`ed` keywords
         keywords = _.union(keywords, this.get(options.keywordField));
 
-        if (!_.isArray(keywords)) {
-            keywords = [keywords];
-        }
 
-        //iterate source fields to obtain keywords
-        _.forEach(options.fields, function(field) {
+        //iterate source fields to obtain keywords parsing work
+        var works = _.map(options.fields, function(field) {
             //get field value
             var value = this.get(field);
 
             if (value) {
                 value = _.isArray(value) ? value : [value];
 
-                //parse keywords from it
-                value = parseKeywords(value.join(' '), options);
-
-                keywords = _.union(keywords, value);
+                return function(next) {
+                    //parse keywords from it
+                    value = parseKeywords(value.join(' '), options, next);
+                };
             }
 
         }.bind(this));
 
-        //compact keywords
-        keywords = _.compact(keywords);
+        //extract keywords from each field in parallel
+        async.parallel(_.compact(works), function(error, _keywords) {
+            if (error) {
+                done(error);
+            } else {
 
-        //set keywords
-        this.set(options.keywordField, keywords);
+                _keywords = _.flatten(_keywords);
+                _keywords = _.union(_keywords, keywords);
+                _keywords = _.compact(_keywords);
+
+                this.set(options.keywordField, _keywords);
+
+                done(null, this);
+            }
+
+        }.bind(this));
 
     };
 
@@ -176,7 +193,7 @@ module.exports = exports = function(schema, options) {
      *              keyword
      * @param  {String|Array<String>}   [keywords] search string
      * @param  {Object}   [searchOptions] valid mongodb text search options
-     * @param  {Function} [callback] a function to invoke on success or failure 
+     * @param  {Function} callback a function to invoke on success or failure 
      * @return {Query}            valid mongoose query
      */
     schema.statics.search = function(keywords, searchOptions, callback) {
@@ -194,16 +211,15 @@ module.exports = exports = function(schema, options) {
             searchOptions = {};
         }
 
-        //prepare search strings from keywords
-        if (!_.isArray(keywords)) {
-            keywords = parseKeywords(keywords, options);
-        }
+        //normalize keywords
+        keywords =
+            keywords && _.isArray(keywords) ? keywords.join(' ') : keywords;
 
         //prepare text search criteria
         var $text = _.merge({}, {
             $language: options.language
         }, searchOptions, {
-            $search: keywords.join(' ').trim()
+            $search: keywords.toLowerCase().trim()
         });
 
         //prepare query
@@ -257,10 +273,10 @@ module.exports = exports = function(schema, options) {
         }.bind(this));
 
         if (changed) {
-            this.keywordize();
+            return this.keywordize(next);
+        } else {
+            return next();
         }
-
-        return next();
     });
 
 };

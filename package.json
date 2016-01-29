@@ -1,6 +1,6 @@
 {
     "name": "mongoose-searchable",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "description": "Keywords based searching for mongoose model, utilizing mongodb text search",
     "main": "index.js",
     "scripts": {

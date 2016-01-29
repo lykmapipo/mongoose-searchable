@@ -56,37 +56,48 @@ describe('searchable', function() {
             expect(Book.search).to.be.a('function');
         });
 
-        it('should be able to keywordize an instance from its fields', function() {
+        it('should be able to keywordize an instance from its fields', function(done) {
             var book = new Book(books[0]);
             expect(book.keywords).to.have.length(0);
 
-            book.keywordize();
-            expect(book.keywords).to.have.length.above(0);
+            book.keywordize(function(error, _book) {
+                expect(_book.keywords).to.have.length.above(0);
+                done(error, _book);
+            });
+
         });
 
 
-        it('should be able to keywordize an instance with provided keywords', function() {
+        it('should be able to keywordize an instance with provided keywords', function(done) {
             var book = new Book();
             expect(book.keywords).to.have.length(0);
 
             var keywords = faker.lorem.words();
-            book.keywordize(keywords);
 
-            expect(book.keywords).to.have.length.above(0);
-            expect(book.keywords).to.contain(keywords[0]);
+            book.keywordize(keywords, function(error, _book) {
+
+                expect(_book.keywords).to.have.length.above(0);
+                expect(_book.keywords).to.contain(keywords[0]);
+
+                done(error, _book);
+            });
         });
 
-        it('should be able to unkeywordize an instance with provided keywords', function() {
+        it('should be able to unkeywordize an instance with provided keywords', function(done) {
             var book = new Book();
             expect(book.keywords).to.have.length(0);
 
             var keywords = faker.lorem.words();
-            book.keywordize(keywords);
+            book.keywordize(keywords, function(error, _book) {
 
-            book.unkeywordize(keywords[0]);
+                _book.unkeywordize(keywords[0]);
 
-            expect(book.keywords).to.have.length.above(0);
-            expect(book.keywords).to.not.contain(keywords[0]);
+                expect(_book.keywords).to.have.length.above(0);
+                expect(_book.keywords).to.not.contain(keywords[0]);
+
+                done(error, _book);
+
+            });
         });
 
     });
