@@ -6,7 +6,8 @@ process.env.NODE_ENV = 'test';
 //dependencies
 var async = require('async');
 var mongoose = require('mongoose');
-
+// debug mongoose queries
+// mongoose.set('debug', true);
 
 /**
  * @description wipe all mongoose model data and drop all indexes

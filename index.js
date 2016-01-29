@@ -149,6 +149,7 @@ module.exports = exports = function(schema, options) {
      * @description search and score stored documents based on the provided
      *              keyword
      * @param  {String|Array<String>}   keywords search string
+     * @param  {Object}   options valid mongodb text search options
      * @param  {Function} [callback] a function to invoke on success or failure 
      * @return {Query}            valid mongoose query
      */
@@ -166,24 +167,33 @@ module.exports = exports = function(schema, options) {
             keywords = parseKeywords(keywords, options);
         }
 
+        //prepare query
+        var query;
+
+        //use normal find query if no search keywords
+        if (!keywords || keywords.length <= 0) {
+            query = this.find({});
+        }
+
         //if there are search strings 
         //prepare mongoose text search query
-        var query = this.find({
-                $text: {
-                    $search: keywords.join(' ').trim(),
-                    $language: options.language
-                }
-            }, {
-                score: {
-                    $meta: 'textScore'
-                }
-            })
-            .sort({
-                score: {
-                    $meta: 'textScore'
-                }
-            });
-
+        else {
+            query = this.find({
+                    $text: {
+                        $search: keywords.join(' ').trim(),
+                        $language: options.language
+                    }
+                }, {
+                    score: {
+                        $meta: 'textScore'
+                    }
+                })
+                .sort({
+                    score: {
+                        $meta: 'textScore'
+                    }
+                });
+        }
 
         //execute query if callback provided
         if (callback && _.isFunction(callback)) {
