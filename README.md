@@ -63,8 +63,12 @@ Example:
 ```js
 BookSchema.plugin(searchable,{
     keywordField:'keywords',
+    language:'english',
     fields:['title','authors'],
-    blacklist:['comic','batman']
+    blacklist:['comic','batman'],
+    extract: function(content, done){
+        done(null, content.split(' '));
+    }
 });
 ```
 
@@ -84,7 +88,7 @@ Book.search(terms, function(error, foundBooks) {
 
 ```
  
-### `keywordize([keywords])`
+### `keywordize([keywords], done)`
 An instance method used to compute instance keywords from `keyword fields` and union it with the optional provided additional `keywords`
 
 Example:
@@ -93,10 +97,14 @@ var book = new Book();
 expect(book.keywords).to.have.length(0);
 
 var keywords = faker.lorem.words();
-book.keywordize(keywords);
 
-expect(book.keywords).to.have.length.above(0);
-expect(book.keywords).to.contain(keywords[0]);
+book.keywordize(function(error, _book) {
+    
+    expect(_book.keywords).to.have.length.above(0);
+    expect(_book.keywords).to.contain(keywords[0]);
+
+    done(error, _book);
+});
 
 ```
 
