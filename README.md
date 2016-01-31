@@ -54,7 +54,7 @@ Book.search(['Amaya Blick', 'Otho Prosacco III'], function(error, books){
 ## Plugin Options
 
 - `keywordField` specifies which schema field to be used to store `keywords`. default to `keywords`.
-- `extract` optional asyn function that used to extract keywords from fields. If not provided [glossary](https://github.com/harthur/glossary) will be used
+- `extract` optional function that used to extract language specific keywords from fields. If not provided [glossary](https://github.com/harthur/glossary) will be used
 - `fields` specifies which fields fields to be used for computing `keywords`. default to all fields with `string schema type`
 - `blacklist` specifies a collections of `words` to remove from keywords. default to `[]`
 - `language` change the [search language](http://docs.mongodb.org/manual/reference/command/text/). Default to `english`. If you specify a language value of **"none"**, then the text search uses simple tokenization with no list of stop words and no stemming.
