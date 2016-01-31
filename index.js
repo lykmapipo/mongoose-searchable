@@ -215,47 +215,55 @@ module.exports = exports = function(schema, options) {
         keywords =
             keywords && _.isArray(keywords) ? keywords.join(' ') : keywords;
 
-        //prepare text search criteria
-        var $text = _.merge({}, {
-            $language: options.language
-        }, searchOptions, {
-            $search: keywords.toLowerCase().trim()
-        });
+        //perform search
+        async.waterfall([
 
-        //prepare query
-        var query;
+            function normalize(next) {
+                parseKeywords(keywords, options, next);
+            },
 
-        //use normal find query if no search keywords
-        if (!keywords || keywords.length <= 0) {
-            query = this.find({});
-        }
+            function executeSearch(keywords, next) {
+                keywords = keywords.join(' ').toLowerCase().trim();
 
-        //if there are search strings 
-        //prepare mongoose text search query
-        else {
-            query = this.find({
-                    $text: $text
-                }, {
-                    score: {
-                        $meta: 'textScore'
-                    }
-                })
-                .sort({
-                    score: {
-                        $meta: 'textScore'
-                    }
+                //prepare text search criteria
+                var $text = _.merge({}, {
+                    $language: options.language
+                }, searchOptions, {
+                    $search: keywords
                 });
-        }
 
-        //execute query if callback provided
-        if (callback && _.isFunction(callback)) {
-            return query.exec(callback);
-        }
+                //prepare query
+                var query;
 
-        //otherwise return mongoose query
-        else {
-            return query;
-        }
+                //use normal find query if no search keywords
+                if (!keywords || keywords.length <= 0) {
+                    query = this.find({});
+                }
+
+                //if there are search strings 
+                //prepare mongoose text search query
+                else {
+                    query = this.find({
+                            $text: $text
+                        }, {
+                            score: {
+                                $meta: 'textScore'
+                            }
+                        })
+                        .sort({
+                            score: {
+                                $meta: 'textScore'
+                            }
+                        });
+                }
+
+                //execute query
+                query.exec(next);
+                
+            }.bind(this)
+
+        ], callback);
+
     };
 
 

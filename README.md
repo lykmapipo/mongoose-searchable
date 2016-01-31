@@ -78,7 +78,7 @@ BookSchema.plugin(searchable,{
 A static method used to search documents
 
 - `terms` an array of string or space separated string containing `terms` used to search documents
-- `callback(error, found)` an optional callback provide to run a query. if not provided `mongoose query` instance is returned
+- `callback(error, found)` an optional callback provide to run a query.
 
 Example:
 ```js
