@@ -74,7 +74,7 @@ BookSchema.plugin(searchable,{
 
 ## API
 
-### `search(terms, callback(error, found)): Query`
+### `search(terms, callback(error, found))`
 A static method used to search documents
 
 - `terms` an array of string or space separated string containing `terms` used to search documents
